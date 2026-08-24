@@ -140,12 +140,12 @@
         </p>
 
         <h2>
-            From a Button Press to an Interrupt:
-            GPIO on the STM32F407
+            Redesigning the Quadcopter: <br>
+            Bare Metal Programming
         </h2>
 
         <p class="post-date">
-            August 23, 2026
+            August 24, 2026
         </p>
 
     </header>
@@ -157,13 +157,12 @@
     <figure class="post-hero-image">
 
         <img
-            src="../assets/img/blog/gpio-interrupt/stm32-breadboard.jpg"
+            src="../assets/img/post1/quadcopter.jpeg"
             alt="STM32F407 connected to a breadboard for GPIO interrupt testing"
         >
-
+        
         <figcaption>
-            Testing GPIO input, output and external interrupts
-            on the STM32F407.
+            Original Quadcopter built with Arduino.
         </figcaption>
 
     </figure>
@@ -173,6 +172,23 @@
     <!-- ARTICLE -->
 
     <div class="post-content">
+
+        <h3>
+            Original Design
+        </h3>
+
+        <p>
+            A couple of years ago I built a self balancing quadcopter
+            with arduino and it's built in libraries. While this was 
+            no small feat to buy the individual parts, learn about PID 
+            and program it, I want to redesign the entire system.
+        </p>
+
+        <p>
+            This time I want to program the system bare metal. This 
+            means writing all the drivers, libraries and the flight 
+            controller.
+        </p>
 
 
         <p class="post-lead">
@@ -402,9 +418,13 @@ GPIO_Init(&GPIOBtn);</code></pre>
         >
 
             <source
-                src="../assets/video/gpio-interrupt-demo.mp4"
+                src="../assets/img/post1/post1-video1-rot.mp4"
                 type="video/mp4"
             >
+            <!-- <video width="640" height="360" controls>
+        <source src="../assets/img/post1/post1-video1-rot.mp4" type="video/mp4">
+        Your browser does not support the video tag.
+        </video> -->
 
             Your browser does not support HTML video.
 
