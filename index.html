@@ -2,6 +2,15 @@
 <html lang="en">
 
 <head>
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-SS3D09DCH5"></script>
+    <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+
+    gtag('config', 'G-SS3D09DCH5');
+    </script>
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -98,6 +107,7 @@
 
             <a
                 href="./blog/index.html"
+                onclick="gtag('event','blog_open');"
                 class="button button-primary"
             >
                 Read Development Log
@@ -106,6 +116,7 @@
             <a
                 href="https://github.com/Robinhoets/stm32f407-quadcopter"
                 target="_blank"
+                onclick="gtag('event','quadcopter_repo');"
                 rel="noopener noreferrer"
                 class="button button-outline"
             >
@@ -612,6 +623,7 @@
 
             <a
                 href="./assets/my_resume/Robert_Smith_Resume.pdf"
+                onclick="gtag('event','resume_download');"
                 target="_blank"
                 class="button button-primary"
             >
@@ -621,6 +633,7 @@
             <a
                 href="https://www.linkedin.com/in/robertevanteaguesmith/"
                 target="_blank"
+                onclick="gtag('event','linkedin_click');"
                 rel="noopener noreferrer"
                 class="social-link"
                 aria-label="LinkedIn"
@@ -631,6 +644,7 @@
             <a
                 href="https://github.com/Robinhoets"
                 target="_blank"
+                onclick="gtag('event','github_click');"
                 rel="noopener noreferrer"
                 class="social-link"
                 aria-label="GitHub"
