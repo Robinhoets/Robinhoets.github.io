@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>
+        Quadcopter Development Blog | Robert Smith
+    </title>
+
+    <meta
+        name="description"
+        content="Development log for an STM32F407 quadcopter flight controller built from the ground up."
+    >
+
+    <link
+        rel="stylesheet"
+        href="../assets/css/blog.css"
+    >
+
+    <script
+        src="https://kit.fontawesome.com/a9cdbedf57.js"
+        crossorigin="anonymous">
+    </script>
+
+</head>
+
+
+<body>
+
+
+<!-- =========================================================
+     HEADER
+     ========================================================= -->
+
+<header class="blog-header">
+
+    <a
+        href="../index.html"
+        class="logo"
+    >
+        Robert Smith
+    </a>
+
+
+    <nav>
+
+        <a href="../index.html">
+            Portfolio
+        </a>
+
+        <a href="./index.html">
+            Development Log
+        </a>
+
+        <a
+            href="https://github.com/Robinhoets/stm32f407-quadcopter"
+            target="_blank"
+            rel="noopener noreferrer"
+        >
+            <i class="fa-brands fa-github"></i>
+            GitHub
+        </a>
+
+    </nav>
+
+</header>
+
+
+
+<main class="blog-container">
+
+
+<!-- =========================================================
+     BLOG INTRO
+     ========================================================= -->
+
+<section class="blog-intro">
+
+    <p class="eyebrow">
+        STM32F407 QUADCOPTER
+    </p>
+
+    <h1>
+        Flight Controller
+        <span>Development Log</span>
+    </h1>
+
+    <p>
+        I'm documenting the process of building a quadcopter
+        flight controller from the peripheral level upward:
+        drivers, sensors, estimation, control and eventually flight.
+    </p>
+
+
+    <div class="project-links">
+
+        <a
+            href="https://github.com/Robinhoets/stm32f407-quadcopter"
+            target="_blank"
+            rel="noopener noreferrer"
+        >
+            <i class="fa-brands fa-github"></i>
+            Project Repository
+        </a>
+
+        <a href="../index.html#current-project">
+            Project Overview
+        </a>
+
+    </div>
+
+</section>
+
+
+
+<!-- =========================================================
+     BLOG POST 001
+     ADD NEW POSTS ABOVE THIS ARTICLE
+     ========================================================= -->
+
+<article
+    class="blog-post"
+    id="gpio-interrupts"
+>
+
+
+    <!-- POST HEADER -->
+
+    <header class="post-header">
+
+        <p class="post-number">
+            DEVELOPMENT LOG 001
+        </p>
+
+        <h2>
+            From a Button Press to an Interrupt:
+            GPIO on the STM32F407
+        </h2>
+
+        <p class="post-date">
+            August 23, 2026
+        </p>
+
+    </header>
+
+
+
+    <!-- HERO IMAGE -->
+
+    <figure class="post-hero-image">
+
+        <img
+            src="../assets/img/blog/gpio-interrupt/stm32-breadboard.jpg"
+            alt="STM32F407 connected to a breadboard for GPIO interrupt testing"
+        >
+
+        <figcaption>
+            Testing GPIO input, output and external interrupts
+            on the STM32F407.
+        </figcaption>
+
+    </figure>
+
+
+
+    <!-- ARTICLE -->
+
+    <div class="post-content">
+
+
+        <p class="post-lead">
+            Before I can read sensors, control motors or implement
+            a flight controller, the STM32 needs a reliable way
+            to interact with the hardware around it.
+        </p>
+
+
+        <p>
+            One of the first pieces of the flight-controller stack
+            I've implemented is a GPIO driver. GPIO, or
+            General Purpose Input/Output, gives the microcontroller
+            a basic interface to external hardware.
+        </p>
+
+
+        <p>
+            For this test I connected a button and LED to the
+            STM32F407 and configured the input to generate an
+            external interrupt. Instead of continuously checking
+            whether the button is pressed, the processor can be
+            interrupted when the event actually occurs.
+        </p>
+
+
+
+        <!-- =====================================================
+             WHY INTERRUPTS
+             ===================================================== -->
+
+        <h3>
+            Why Use an Interrupt?
+        </h3>
+
+
+        <p>
+            The simplest way to detect a button would be polling.
+            The processor could continuously read the GPIO pin:
+        </p>
+
+
+<pre><code>while (1)
+{
+    if (GPIO_ReadFromInputPin(GPIOA, GPIO_PIN_NO_5))
+    {
+        GPIO_ToggleOutputPin(
+            GPIOD,
+            GPIO_PIN_NO_12
+        );
+    }
+}</code></pre>
+
+
+        <p>
+            That approach works, but the processor has to repeatedly
+            check the input whether anything is happening or not.
+        </p>
+
+
+        <p>
+            With an interrupt, hardware detects the configured event
+            and notifies the processor. Execution temporarily jumps
+            to an interrupt service routine, handles the event and
+            then returns to whatever code was previously executing.
+        </p>
+
+
+
+        <!-- SIGNAL FLOW -->
+
+        <div class="signal-flow">
+
+            <div>
+                <span>1</span>
+                Button
+            </div>
+
+            <b>→</b>
+
+            <div>
+                <span>2</span>
+                GPIO
+            </div>
+
+            <b>→</b>
+
+            <div>
+                <span>3</span>
+                EXTI
+            </div>
+
+            <b>→</b>
+
+            <div>
+                <span>4</span>
+                NVIC
+            </div>
+
+            <b>→</b>
+
+            <div>
+                <span>5</span>
+                ISR
+            </div>
+
+        </div>
+
+
+
+        <!-- =====================================================
+             CONFIGURATION
+             ===================================================== -->
+
+        <h3>
+            Configuring the GPIO
+        </h3>
+
+
+        <p>
+            My GPIO driver uses a handle containing the GPIO
+            peripheral and the configuration for the individual pin.
+        </p>
+
+
+<pre><code>GPIO_Handle_t GPIOBtn;
+
+GPIOBtn.pGPIOx = GPIOA;
+
+GPIOBtn.GPIO_PinConfig.GPIO_PinNumber =
+    GPIO_PIN_NO_5;
+
+GPIOBtn.GPIO_PinConfig.GPIO_PinMode =
+    GPIO_MODE_IT_FT;
+
+GPIOBtn.GPIO_PinConfig.GPIO_PinSpeed =
+    GPIO_SPEED_FAST;
+
+GPIOBtn.GPIO_PinConfig.GPIO_PinPuPdControl =
+    GPIO_PIN_PU;
+
+GPIO_Init(&GPIOBtn);</code></pre>
+
+
+        <p>
+            In this case, the pin is configured as an interrupt input
+            triggered by a falling edge.
+        </p>
+
+
+        <div class="technical-note">
+
+            <strong>
+                Falling Edge
+            </strong>
+
+            <p>
+                A falling-edge event occurs when the signal changes
+                from a logic HIGH state to a logic LOW state.
+            </p>
+
+        </div>
+
+
+
+        <!-- =====================================================
+             INTERRUPT HANDLER
+             ===================================================== -->
+
+        <h3>
+            Handling the Interrupt
+        </h3>
+
+
+        <p>
+            Once the configured external interrupt fires, execution
+            enters the appropriate interrupt handler:
+        </p>
+
+
+<pre><code>void EXTI9_5_IRQHandler(void)
+{
+    GPIO_IRQHandling(GPIO_PIN_NO_5);
+
+    GPIO_ToggleOutputPin(
+        GPIOD,
+        GPIO_PIN_NO_12
+    );
+}</code></pre>
+
+
+        <p>
+            The first operation clears the pending interrupt flag.
+            The LED output is then toggled before returning from
+            the handler.
+        </p>
+
+
+        <p>
+            Keeping an interrupt handler short is important.
+            An ISR prevents normal execution from continuing while
+            it runs, so lengthy processing inside the handler can
+            interfere with other time-sensitive work.
+        </p>
+
+
+
+        <!-- =====================================================
+             VIDEO
+             ===================================================== -->
+
+        <h3>
+            Hardware Test
+        </h3>
+
+
+        <p>
+            This is the actual GPIO interrupt running on the
+            STM32F407 development board.
+        </p>
+
+
+        <video
+            class="post-video"
+            controls
+            preload="metadata"
+        >
+
+            <source
+                src="../assets/video/gpio-interrupt-demo.mp4"
+                type="video/mp4"
+            >
+
+            Your browser does not support HTML video.
+
+        </video>
+
+
+
+        <!-- =====================================================
+             WHY IT MATTERS
+             ===================================================== -->
+
+        <h3>
+            Why This Matters for the Quadcopter
+        </h3>
+
+
+        <p>
+            Toggling an LED obviously isn't the final objective.
+            This is a small hardware test for infrastructure that
+            becomes much more important as the flight controller
+            develops.
+        </p>
+
+
+        <p>
+            A flight controller needs to react to hardware events
+            while simultaneously performing sensor acquisition,
+            state estimation, control calculations and motor output.
+        </p>
+
+
+        <p>
+            Interrupts provide one of the mechanisms that allows
+            the STM32 to respond to those events efficiently without
+            continuously polling every peripheral.
+        </p>
+
+
+
+        <!-- =====================================================
+             SOURCE LINK
+             ===================================================== -->
+
+        <div class="source-card">
+
+            <div>
+
+                <small>
+                    SOURCE CODE
+                </small>
+
+                <strong>
+                    005button_interrupt.c
+                </strong>
+
+            </div>
+
+
+            <a
+                href="https://github.com/Robinhoets/stm32f407-quadcopter/blob/main/Src/005button_interrupt.c"
+                target="_blank"
+                rel="noopener noreferrer"
+            >
+                View on GitHub
+                <span>→</span>
+            </a>
+
+        </div>
+
+
+
+        <!-- =====================================================
+             NEXT
+             ===================================================== -->
+
+        <div class="next-post">
+
+            <p>
+                NEXT DEVELOPMENT STEP
+            </p>
+
+            <h3>
+                I2C and the MPU6050
+            </h3>
+
+            <p>
+                The next major piece of the flight controller is
+                communication with the MPU6050 inertial measurement
+                unit. That starts with finishing and validating the
+                STM32F407 I2C driver.
+            </p>
+
+        </div>
+
+
+    </div>
+
+</article>
+
+
+</main>
+
+
+
+<footer>
+
+    <p>
+        Robert Smith
+        <span>•</span>
+        STM32F407 Quadcopter Development
+    </p>
+
+    <a href="../index.html">
+        Back to Portfolio
+    </a>
+
+</footer>
+
+
+</body>
+
+</html>

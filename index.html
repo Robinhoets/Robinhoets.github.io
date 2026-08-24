@@ -5,175 +5,684 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
     <link rel="icon" href="./assets/img/favicon.png">
-    <title>Robert Smith - Portfolio</title>
 
-    <!-- Font Awesome icons -->
-    <script src="https://kit.fontawesome.com/a9cdbedf57.js" crossorigin="anonymous"></script>
+    <title>Robert Smith | Embedded Software Engineer</title>
 
-    <!-- Styling CSS -->
+    <meta
+        name="description"
+        content="Robert Smith's embedded software portfolio and STM32F407 quadcopter development blog."
+    >
 
-    <!-- Theme 1 -->
-    <link rel="stylesheet" id="themeStylesheet" href="./assets/css/style.css">
+    <link
+        rel="stylesheet"
+        href="./assets/css/style.css"
+    >
 
+    <script
+        src="https://kit.fontawesome.com/a9cdbedf57.js"
+        crossorigin="anonymous">
+    </script>
 </head>
 
 <body>
 
-<header>
+<!-- =========================================================
+     NAVIGATION
+     ========================================================= -->
 
-    <div>
-        <a href="./index.html"><span class="logo">Data Engineer</span></a>
-    </div>
-    <div>
+<header class="site-header">
+
+    <a href="#home" class="logo">
+        Robert Smith
+    </a>
+
+    <nav>
         <ul>
+
             <li>
                 <a href="#home">Home</a>
             </li>
+
             <li>
-                <a href="#about">About</a>
+                <a href="#current-project">Current Project</a>
             </li>
+
             <li>
                 <a href="#projects">Projects</a>
             </li>
+
             <li>
-                <a href="#contact">Contact</a>
+                <a href="./blog/index.html">Blog</a>
             </li>
+
+            <li>
+                <a href="#about">About</a>
+            </li>
+
         </ul>
-    </div>
+    </nav>
 
 </header>
 
+
 <main>
 
-    <!-- Hero Section -->
-    <section class="hero-section" id="home">
-        <div>
-            <div>
-                <h4 title="Hello, How are you?">Hi, There!</h4>
-                <h2 class="hero-section__title">I'm <span>Robert Smith</span></h2>
-                <p class="hero-section__desc">I am a Data Engineer</p>
-            </div>
+<!-- =========================================================
+     HERO
+     ========================================================= -->
 
-            <ul class="social-icons">
-                <!-- Social Icons -->
-                <li>
-                    <a href="https://www.linkedin.com/in/robertevanteaguesmith/" target="_blank"><i
-                            class="fa-brands fa-linkedin"></i></a>
-                </li>
-            </ul>
+<section class="hero-section" id="home">
 
-            <div class="hero-buttons">
-                <button class="btn btn-dark-outlined">
-                    <a href="./assets/my resume/Robert_Smith_Resume.pdf" download>Download CV</a>
-                    <a href="./assets/my resume/Robert_Smith_Resume.pdf"  target="_blank"></a>
-                </button>
-            </div>
+    <div class="hero-content">
+
+        <p class="eyebrow">
+            EMBEDDED SOFTWARE • FIRMWARE • SYSTEMS
+        </p>
+
+        <h1>
+            Building an STM32
+            <span>Flight Controller</span>
+            From Scratch
+        </h1>
+
+        <p class="hero-description">
+            I'm developing a quadcopter flight controller around the
+            STM32F407, writing low-level peripheral drivers in C and
+            documenting the process from GPIO interrupts to sensor
+            acquisition, control systems and eventually autonomous flight.
+        </p>
+
+        <div class="hero-buttons">
+
+            <a
+                href="./blog/index.html"
+                class="button button-primary"
+            >
+                Read Development Log
+            </a>
+
+            <a
+                href="https://github.com/Robinhoets/stm32f407-quadcopter"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="button button-outline"
+            >
+                <i class="fa-brands fa-github"></i>
+                View Source
+            </a>
+
         </div>
 
-        <div class="hero-img">
-            <img src="assets/img/picofme.jpeg" width="350">
+        <div class="hero-status">
+
+            <span class="status-dot"></span>
+
+            <span>
+                Currently working on:
+                <strong>I2C + MPU6050 integration</strong>
+            </span>
+
         </div>
-    </section>
 
-    <!-- About Section  -->
-    <section class="about-section" id="about">
+    </div>
 
-        <div class="about-img">
-            <img src="assets/img/picofme.jpeg" alt="RobertSmith-portfolio">
+
+    <div class="hero-project-image">
+
+        <img
+            src="./assets/img/blog/gpio-interrupt/stm32-breadboard.jpg"
+            alt="STM32F407 development board connected to a breadboard"
+        >
+
+        <div class="image-label">
+            STM32F407 Flight Controller Development
         </div>
 
-        <div class="about-content">
-            <h4>About Me</h4>
-            <h2>I am a Data Engineer & <br> <span>Software Developer</span></h2>
-            <p>Hello there! My name is Robert Smith. I have a B.S. in Computer Science and a B.A. in Psychology. I have
-                experience in Data Engineering at Socure, building pipelines to ingest fraud data with Python, SQL,
-                Airflow and AWS. I have also built React javascript applications for NOAA.
+    </div>
+
+</section>
+
+
+<!-- =========================================================
+     CURRENT PROJECT
+     ========================================================= -->
+
+<section
+    class="current-project-section"
+    id="current-project"
+>
+
+    <div class="section-heading">
+
+        <p class="eyebrow">
+            CURRENT PROJECT
+        </p>
+
+        <h2>
+            STM32F407 Quadcopter
+        </h2>
+
+        <p>
+            The goal is to build the flight controller software from the
+            peripheral level upward instead of relying on a prebuilt
+            flight-control stack.
+        </p>
+
+    </div>
+
+
+    <div class="project-layout">
+
+        <div class="project-description">
+
+            <h3>
+                Building the Stack From the Bottom Up
+            </h3>
+
+            <p>
+                I'm writing drivers for the STM32F407 peripherals that the
+                flight controller will depend on, then building the sensor,
+                estimation and control layers on top of them.
             </p>
 
-            <button class="btn btn-primary">
-                <a target="_blank">
-                    Know More <i class="fa-solid fa-arrow-right-to-bracket"></i>
+            <p>
+                The project will eventually combine IMU measurements,
+                attitude estimation, PID control, motor output and receiver
+                input into a complete self-leveling flight controller.
+            </p>
+
+            <div class="tech-list">
+
+                <span>C</span>
+                <span>STM32F407</span>
+                <span>GPIO</span>
+                <span>IRQ / EXTI</span>
+                <span>I2C</span>
+                <span>SPI</span>
+                <span>UART</span>
+                <span>MPU6050</span>
+                <span>PID</span>
+
+            </div>
+
+        </div>
+
+
+        <div class="progress-card">
+
+            <div class="progress-header">
+
+                <h3>
+                    Development Progress
+                </h3>
+
+                <span>
+                    Flight Controller
+                </span>
+
+            </div>
+
+
+            <ul class="progress-list">
+
+                <li class="complete">
+
+                    <span class="progress-icon">✓</span>
+
+                    <div>
+                        <strong>GPIO Driver</strong>
+                        <small>Digital input and output</small>
+                    </div>
+
+                </li>
+
+
+                <li class="complete">
+
+                    <span class="progress-icon">✓</span>
+
+                    <div>
+                        <strong>External Interrupts</strong>
+                        <small>EXTI and NVIC interrupt handling</small>
+                    </div>
+
+                </li>
+
+
+                <li class="complete">
+
+                    <span class="progress-icon">✓</span>
+
+                    <div>
+                        <strong>SPI Driver</strong>
+                        <small>Peripheral communication</small>
+                    </div>
+
+                </li>
+
+
+                <li class="active">
+
+                    <span class="progress-icon">→</span>
+
+                    <div>
+                        <strong>I2C Driver</strong>
+                        <small>Current development</small>
+                    </div>
+
+                </li>
+
+
+                <li>
+
+                    <span class="progress-icon"></span>
+
+                    <div>
+                        <strong>MPU6050 Driver</strong>
+                        <small>Accelerometer and gyroscope</small>
+                    </div>
+
+                </li>
+
+
+                <li>
+
+                    <span class="progress-icon"></span>
+
+                    <div>
+                        <strong>Attitude Estimation</strong>
+                        <small>Sensor fusion and orientation</small>
+                    </div>
+
+                </li>
+
+
+                <li>
+
+                    <span class="progress-icon"></span>
+
+                    <div>
+                        <strong>ESC / Motor Control</strong>
+                        <small>PWM output</small>
+                    </div>
+
+                </li>
+
+
+                <li>
+
+                    <span class="progress-icon"></span>
+
+                    <div>
+                        <strong>PID Flight Control</strong>
+                        <small>Self-level stabilization</small>
+                    </div>
+
+                </li>
+
+
+                <li>
+
+                    <span class="progress-icon"></span>
+
+                    <div>
+                        <strong>First Hover</strong>
+                        <small>Integrated flight test</small>
+                    </div>
+
+                </li>
+
+            </ul>
+
+        </div>
+
+    </div>
+
+</section>
+
+
+<!-- =========================================================
+     LATEST BLOG POST
+     ========================================================= -->
+
+<section class="latest-post-section">
+
+    <div class="section-heading">
+
+        <p class="eyebrow">
+            LATEST DEVELOPMENT LOG
+        </p>
+
+        <h2>
+            GPIO and External Interrupts
+        </h2>
+
+    </div>
+
+
+    <article class="featured-post">
+
+        <div class="featured-post-media">
+
+            <img
+                src="./assets/img/blog/gpio-interrupt/stm32-breadboard.jpg"
+                alt="STM32F407 GPIO interrupt breadboard test"
+            >
+
+            <span class="post-tag">
+                DEV LOG 001
+            </span>
+
+        </div>
+
+
+        <div class="featured-post-content">
+
+            <p class="post-date">
+                August 23, 2026
+            </p>
+
+            <h3>
+                From a Button Press to an Interrupt:
+                GPIO on the STM32F407
+            </h3>
+
+            <p>
+                Before reading an IMU or controlling motors, the
+                microcontroller needs a reliable way to interact with
+                external hardware.
+            </p>
+
+            <p>
+                For this test, I configured an STM32F407 GPIO input to
+                generate an external interrupt. Pressing the button causes
+                the processor to enter an interrupt handler, clear the
+                pending interrupt and toggle an LED.
+            </p>
+
+            <div class="featured-code">
+
+                <div class="code-header">
+                    EXTI9_5_IRQHandler
+                </div>
+
+                <pre><code>void EXTI9_5_IRQHandler(void)
+{
+    GPIO_IRQHandling(GPIO_PIN_NO_5);
+
+    GPIO_ToggleOutputPin(
+        GPIOD,
+        GPIO_PIN_NO_12
+    );
+}</code></pre>
+
+            </div>
+
+
+            <div class="post-actions">
+
+                <a
+                    href="./blog/index.html#gpio-interrupts"
+                    class="text-link"
+                >
+                    Read Full Development Log
+                    <span>→</span>
                 </a>
-            </button>
-        </div>
 
-    </section>
-
-    <!-- Projects Section -->
-    <section class="projects-section" id="projects">
-        <h2>My <span>Projects (Exciting Project Coming Soon)</span></h2>
-        <div class="projects-cards">
-            <div class="projects-card-box">
-                <div class="projects-card-box__icons">
-                    <i class="fa-solid fa-suitcase"></i>
-                </div>
-                <div class="projects-card-box__desc">
-                    <h4>...</h4>
-                    <p>...
-                    </p>
-                </div>
-                <div class="projects-card-box__buttons">
-                    <button class="btn btn-dark-outlined">
-                        <a target="_blank">View <i
-                                class="fa-solid fa-external-link"></i></a>
-                    </button>
-                </div>
-            </div>
-
-            <div class="projects-card-box">
-                <div class="projects-card-box__icons">
-                    <i class="fa-solid fa-music"></i>
-                </div>
-                <div class="projects-card-box__desc">
-                    <h4>...</h4>
-                    <p>...
-                    </p>
-                </div>
-                <div class="projects-card-box__buttons">
-                    <button class="btn btn-dark-outlined">
-                        <a target="_blank">View <i class="fa-solid fa-external-link"></i></a>
-                    </button>
-                </div>
-
-            </div>
-
-            <div class="projects-card-box">
-                <div class="projects-card-box__icons">
-                    <i class="fa-solid fa-id-card"></i>
-                </div>
-                <div class="projects-card-box__desc">
-                    <h4>...</h4>
-                    <p>...
-                    </p>
-                </div>
-                <div class="projects-card-box__buttons">
-                    <button class="btn btn-dark-outlined">
-                        <a target="_blank">View <i class="fa-solid fa-external-link"></i></a>
-                    </button>
-                </div>
-            </div>
-
-        </div>
-    </section>
-
-    <!-- Contact Section -->
-    <section class="contact-section" id="contact">
-        <h2>Contact Me via email provided in my CV</h2>
-        <div class="contact__github">
-            <button class="btn">
-                <a href="https://github.com/robertevanteaguesmith" target="_blank">
-                    <i class="fa-brands fa-github"></i> Github
+                <a
+                    href="https://github.com/Robinhoets/stm32f407-quadcopter/blob/main/Src/005button_interrupt.c"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class="github-link"
+                >
+                    <i class="fa-brands fa-github"></i>
+                    Source
                 </a>
-            </button>
+
+            </div>
+
         </div>
-    </section>
+
+    </article>
+
+</section>
+
+
+<!-- =========================================================
+     OTHER PROJECTS
+     ========================================================= -->
+
+<section
+    class="projects-section"
+    id="projects"
+>
+
+    <div class="section-heading">
+
+        <p class="eyebrow">
+            OTHER WORK
+        </p>
+
+        <h2>
+            Systems & Embedded Projects
+        </h2>
+
+        <p>
+            Projects focused on low-level software, operating systems,
+            embedded development and hardware communication.
+        </p>
+
+    </div>
+
+
+    <div class="project-grid">
+
+        <article class="project-card">
+
+            <div class="project-icon">
+                <i class="fa-solid fa-microchip"></i>
+            </div>
+
+            <h3>
+                Operating System
+            </h3>
+
+            <p>
+                A 32-bit operating system written in C and x86 assembly
+                with memory management, scheduling, terminal support and
+                filesystem functionality.
+            </p>
+
+            <div class="project-tech">
+
+                <span>C</span>
+                <span>x86 ASM</span>
+                <span>QEMU</span>
+
+            </div>
+
+        </article>
+
+
+        <article class="project-card">
+
+            <div class="project-icon">
+                <i class="fa-solid fa-satellite-dish"></i>
+            </div>
+
+            <h3>
+                STM32 LoRa Telemetry
+            </h3>
+
+            <p>
+                Embedded telemetry system using STM32 peripheral
+                interfaces, an MPU6050 IMU, LoRa radio communication and
+                a Python ground station.
+            </p>
+
+            <div class="project-tech">
+
+                <span>STM32</span>
+                <span>C</span>
+                <span>LoRa</span>
+                <span>Python</span>
+
+            </div>
+
+        </article>
+
+
+        <article class="project-card">
+
+            <div class="project-icon">
+                <i class="fa-brands fa-linux"></i>
+            </div>
+
+            <h3>
+                Linux System Monitor
+            </h3>
+
+            <p>
+                Linux systems project that reads kernel interfaces such as
+                /proc to inspect CPU, memory, processes and filesystem
+                information.
+            </p>
+
+            <div class="project-tech">
+
+                <span>Linux</span>
+                <span>C</span>
+                <span>/proc</span>
+
+            </div>
+
+        </article>
+
+    </div>
+
+</section>
+
+
+<!-- =========================================================
+     ABOUT
+     ========================================================= -->
+
+<section
+    class="about-section"
+    id="about"
+>
+
+    <div class="about-image">
+
+        <img
+            src="./assets/img/picofme.jpeg"
+            alt="Robert Smith"
+        >
+
+    </div>
+
+
+    <div class="about-content">
+
+        <p class="eyebrow">
+            ABOUT
+        </p>
+
+        <h2>
+            Software Engineer Focused on
+            <span>Embedded & Systems Software</span>
+        </h2>
+
+        <p>
+            I'm a software engineer with a B.S. in Computer Science and
+            professional experience building production software and data
+            systems.
+        </p>
+
+        <p>
+            My current work focuses heavily on lower-level software:
+            embedded C, microcontrollers, operating systems, Linux and
+            hardware communication.
+        </p>
+
+
+        <div class="about-actions">
+
+            <a
+                href="./assets/my resume/Robert_Smith_Resume.pdf"
+                target="_blank"
+                class="button button-primary"
+            >
+                View Resume
+            </a>
+
+            <a
+                href="https://www.linkedin.com/in/robertevanteaguesmith/"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="social-link"
+                aria-label="LinkedIn"
+            >
+                <i class="fa-brands fa-linkedin"></i>
+            </a>
+
+            <a
+                href="https://github.com/Robinhoets"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="social-link"
+                aria-label="GitHub"
+            >
+                <i class="fa-brands fa-github"></i>
+            </a>
+
+        </div>
+
+    </div>
+
+</section>
 
 </main>
 
-<footer>
-</footer>
 
+<!-- =========================================================
+     FOOTER
+     ========================================================= -->
+
+<footer>
+
+    <div>
+
+        <strong>
+            Robert Smith
+        </strong>
+
+        <p>
+            Embedded Software • Firmware • Systems
+        </p>
+
+    </div>
+
+
+    <div>
+
+        <a href="./blog/index.html">
+            Development Blog
+        </a>
+
+        <a
+            href="https://github.com/Robinhoets"
+            target="_blank"
+            rel="noopener noreferrer"
+        >
+            GitHub
+        </a>
+
+    </div>
+
+</footer>
 
 </body>
 
