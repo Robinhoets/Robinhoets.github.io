@@ -270,7 +270,9 @@
 
                     <div>
                         <strong>SPI Driver</strong>
-                        <small>Peripheral communication</small>
+                        <small>
+                            Transmission validated with logic analyzer
+                        </small>
                     </div>
 
                 </li>
@@ -369,7 +371,7 @@
         </p>
 
         <h2>
-            GPIO and External Interrupts
+            Validating SPI With a Logic Analyzer
         </h2>
 
     </div>
@@ -377,75 +379,92 @@
 
     <article class="featured-post">
 
+        <!-- IMAGE -->
+
         <div class="featured-post-media">
 
             <img
-                src="./assets/img/post1/post1-img1.jpeg"
-                alt="STM32F407 GPIO interrupt breadboard test"
+                src="./assets/img/post2/IMG_0603.jpeg"
+                alt="STM32F407 connected to a logic analyzer for SPI testing"
             >
 
             <span class="post-tag">
-                DEV LOG 001
+                DEV LOG 002
             </span>
 
         </div>
 
 
+        <!-- CONTENT -->
+
         <div class="featured-post-content">
 
             <p class="post-date">
-                August 23, 2026
+                August 26, 2026
             </p>
+
 
             <h3>
-                From a Button Press to an Interrupt:
-                GPIO on the STM32F407
+                Sending "Hello World" Over SPI
+                and Verifying It on the Wire
             </h3>
 
-            <p>
-                Before reading an IMU or controlling motors, the
-                microcontroller needs a reliable way to interact with
-                external hardware.
-            </p>
 
             <p>
-                For this test, I configured an STM32F407 GPIO input to
-                generate an external interrupt. Pressing the button causes
-                the processor to enter an interrupt handler, clear the
-                pending interrupt and toggle an LED.
+                I've moved from GPIO and interrupts into serial
+                communication on my STM32F407 flight controller.
             </p>
+
+
+            <p>
+                In the latest development log, I configure SPI2 as
+                a master, transmit "Hello World" using my own SPI
+                driver and connect a logic analyzer directly to the
+                STM32 to verify the resulting clock and data signals.
+            </p>
+
+
+            <p>
+                The analyzer lets me validate both the decoded
+                message and the individual clock edges produced by
+                the hardware.
+            </p>
+
+
+            <!-- SMALL CODE PREVIEW -->
 
             <div class="featured-code">
 
                 <div class="code-header">
-                    EXTI9_5_IRQHandler
+                    SPI TRANSMISSION
                 </div>
 
-                <pre><code>void EXTI9_5_IRQHandler(void)
-{
-    GPIO_IRQHandling(GPIO_PIN_NO_5);
+<pre><code>char user_data[] = "Hello World";
 
-    GPIO_ToggleOutputPin(
-        GPIOD,
-        GPIO_PIN_NO_12
-    );
-}</code></pre>
+SPI_SendData(
+    SPI2,
+    (uint8_t *)user_data,
+    strlen(user_data)
+);</code></pre>
 
             </div>
 
 
+            <!-- ACTIONS -->
+
             <div class="post-actions">
 
                 <a
-                    href="./blog/index.html#gpio-interrupts"
+                    href="./blog/index.html#spi-hello-world"
                     class="text-link"
                 >
-                    Read Full Development Log
+                    Read Development Log
                     <span>→</span>
                 </a>
 
+
                 <a
-                    href="https://github.com/Robinhoets/stm32f407-quadcopter/blob/main/Src/005button_interrupt.c"
+                    href="https://github.com/Robinhoets/stm32f407-quadcopter/blob/main/Src/006spi_tx_tesing.c"
                     target="_blank"
                     rel="noopener noreferrer"
                     class="github-link"

@@ -128,6 +128,815 @@
 
 </section>
 
+<!-- =========================================================
+     BLOG POST 002
+     SPI TRANSMISSION + LOGIC ANALYZER
+     ========================================================= -->
+
+<article
+    class="blog-post"
+    id="spi-hello-world"
+>
+
+    <!-- POST HEADER -->
+
+    <header class="post-header">
+
+        <p class="post-number">
+            DEVELOPMENT LOG 002
+        </p>
+
+        <h2>
+            "Hello World" Over SPI:
+            STM32F407 Driver With a Logic Analyzer
+        </h2>
+
+        <p class="post-date">
+            August 26, 2026
+        </p>
+
+    </header>
+
+
+    <!-- =====================================================
+         HERO IMAGE
+         ===================================================== -->
+
+    <figure class="post-hero-image">
+
+        <img
+            src="../assets/img/post2/IMG_0603.jpeg"
+            alt="STM32F407 development board connected to a logic analyzer for SPI testing"
+        >
+
+        <figcaption>
+            STM32F407 connected to a logic analyzer while testing
+            my SPI2 driver.
+        </figcaption>
+
+    </figure>
+
+
+    <!-- =====================================================
+         ARTICLE
+         ===================================================== -->
+
+    <div class="post-content">
+
+
+        <!-- INTRO -->
+
+        <p class="post-lead">
+            After getting GPIO and external interrupts working on
+            the STM32F407 I moved on to serial communication.
+            For this test I configured the STM32's SPI2 peripheral and 
+            transmitted "Hello World" using my own SPI driver. I then 
+            connected a logic analyzer to verify what was actually
+            happening on the physical pins.
+        </p>
+
+
+        <p>
+            "Hello World" is obviously not the final purpose of the
+            SPI driver but gives me something much more useful at
+            this stage of the project: a known sequence of bytes
+            that I can transmit and compare against a physical
+            measurement.
+        </p>
+
+
+        <p>
+            Rather than connecting another SPI device immediately
+            I wanted to validate the STM32 side first. That means
+            checking the GPIO configuration and then the  SPI peripheral
+            configuration. Next clock generation and transmitted data,
+            before adding another piece of hardware to the system.
+        </p>
+
+
+
+        <!-- =====================================================
+             WHY SPI
+             ===================================================== -->
+
+        <h3>
+            Moving From GPIO to Serial Communication
+        </h3>
+
+
+        <p>
+            My previous test focused on GPIO and interrupts. A button
+            changed the electrical state of an input pin, the STM32
+            detected the event through the EXTI peripheral and an
+            interrupt service routine toggled an LED.
+        </p>
+
+
+        <p>
+            SPI introduces another level of complexity; instead of
+            interpreting a single HIGH or LOW state the
+            microcontroller uses coordinated clock and data signals
+            to transfer a sequence of bits between devices.
+        </p>
+
+
+        <div class="signal-flow">
+
+            <div>
+                <span>1</span>
+                C String
+            </div>
+
+            <b>→</b>
+
+            <div>
+                <span>2</span>
+                SPI Driver
+            </div>
+
+            <b>→</b>
+
+            <div>
+                <span>3</span>
+                SPI2
+            </div>
+
+            <b>→</b>
+
+            <div>
+                <span>4</span>
+                Physical Pins
+            </div>
+
+            <b>→</b>
+
+            <div>
+                <span>5</span>
+                Logic Analyzer
+            </div>
+
+        </div>
+
+
+
+        <!-- =====================================================
+             HARDWARE SETUP
+             ===================================================== -->
+
+        <h3>
+            The Hardware Test Setup
+        </h3>
+
+
+        <p>
+            I connected the logic analyzer directly to the STM32F407
+            so I could observe the signals produced by SPI2.
+        </p>
+
+
+        <figure class="post-hero-image">
+
+            <img
+                src="../assets/img/post2/IMG_0603.jpeg"
+                alt="Physical STM32F407 and logic analyzer setup used to test SPI communication"
+            >
+
+            <figcaption>
+                The physical test setup: The logic analyzer is
+                connected to the STM32F407.
+            </figcaption>
+
+        </figure>
+
+
+        <p>
+            For this transmit only test the two important signals
+            are SCLK and MOSI. The STM32 is acting as the SPI master
+            so it generates the clock and places outgoing data onto
+            MOSI.
+        </p>
+
+
+        <div class="technical-note">
+
+            <strong>
+                SPI2 Test Connections
+            </strong>
+
+            <p>
+                PB13 → SPI2 SCLK<br>
+                PB15 → SPI2 MOSI<br>
+                Logic Analyzer GND → STM32 GND
+            </p>
+
+        </div>
+
+
+        <p>
+            MISO is not needed for this particular test because
+            nothing is being transmitted back to the STM32.
+            The purpose here is specifically to validate the
+            transmit path.
+        </p>
+
+
+
+        <!-- =====================================================
+             GPIO CONFIGURATION
+             ===================================================== -->
+
+        <h3>
+            Giving SPI2 Control of the GPIO Pins
+        </h3>
+
+
+        <p>
+            Before SPI2 can generate a clock or transmit data the
+            appropriate GPIO pins need to be connected internally
+            to the SPI peripheral.
+        </p>
+
+
+        <p>
+            On the STM32F407G this is done by configuring the pins
+            for alternate function mode and selecting the appropriate
+            alternate function.
+        </p>
+
+
+<pre><code>void SPI2_GPIOInits(void)
+{
+    GPIO_Handle_t SPIPins;
+
+    SPIPins.pGPIOx = GPIOB;
+
+    SPIPins.GPIO_PinConfig.GPIO_PinMode =
+        GPIO_MODE_ALTFN;
+
+    SPIPins.GPIO_PinConfig.GPIO_PinAltFunMode =
+        5;
+
+    SPIPins.GPIO_PinConfig.GPIO_PinOPType =
+        GPIO_OP_TYPE_PP;
+
+    SPIPins.GPIO_PinConfig.GPIO_PinPuPdControl =
+        GPIO_NO_PUPD;
+
+    SPIPins.GPIO_PinConfig.GPIO_PinSpeed =
+        GPIO_SPEED_FAST;
+
+    // SPI2 SCLK
+    SPIPins.GPIO_PinConfig.GPIO_PinNumber =
+        GPIO_PIN_NO_13;
+
+    GPIO_Init(&SPIPins);
+
+    // SPI2 MOSI
+    SPIPins.GPIO_PinConfig.GPIO_PinNumber =
+        GPIO_PIN_NO_15;
+
+    GPIO_Init(&SPIPins);
+}</code></pre>
+
+
+        <p>
+            PB13 provides the SPI2 clock and PB15 provides MOSI.
+            Both are configured for Alternate Function 5 which connects
+            those physical pins to the SPI2 peripheral.
+        </p>
+
+
+
+        <!-- =====================================================
+             SPI CONFIGURATION
+             ===================================================== -->
+
+        <h3>
+            Configuring SPI2
+        </h3>
+
+
+        <p>
+            Once the pins are configured I initialize SPI2 using
+            the SPI driver I wrote for the project.
+        </p>
+
+
+<pre><code>void SPI2_Inits(void)
+{
+    SPI_Handle_t SPI2handle;
+
+    SPI2handle.pSPIx = SPI2;
+
+    SPI2handle.SPIConfig.SPI_BusConfig =
+        SPI_BUS_CONFIG_FD;
+
+    SPI2handle.SPIConfig.SPI_DeviceMode =
+        SPI_DEVICE_MODE_MASTER;
+
+    SPI2handle.SPIConfig.SPI_SclkSpeed =
+        SPI_SCLK_SPEED_DIV256;
+
+    SPI2handle.SPIConfig.SPI_DFF =
+        SPI_DFF_8BITS;
+
+    SPI2handle.SPIConfig.SPI_CPOL =
+        SPI_CPOL_LOW;
+
+    SPI2handle.SPIConfig.SPI_CPHA =
+        SPI_CPHA_LOW;
+
+    SPI2handle.SPIConfig.SPI_SSM =
+        SPI_SSM_EN;
+
+    SPI_Init(&SPI2handle);
+}</code></pre>
+
+
+        <div class="technical-note">
+
+            <strong>
+                SPI2 Configuration
+            </strong>
+
+            <p>
+                Device → Master<br>
+                Bus → Full Duplex<br>
+                Frame Size → 8 bits<br>
+                Clock Speed → Peripheral Clock / 256<br>
+                CPOL → Low<br>
+                CPHA → Low<br>
+                Software Slave Management → Enabled
+            </p>
+
+        </div>
+
+
+        <p>
+            I am using 8 bit frames because each character in the
+            test message can be transmitted as a byte. The STM32
+            is configured as the master; meaning it is responsible
+            for generating SCLK.
+        </p>
+
+
+
+        <!-- =====================================================
+             TRANSMISSION
+             ===================================================== -->
+
+        <h3>
+            Sending "Hello World"
+        </h3>
+
+
+        <p>
+            Once the GPIO and SPI configuration is complete I can
+            enable the peripheral and pass the message to my
+            SPI transmit function.
+        </p>
+
+
+<pre><code>int main(void)
+{
+    char user_data[] = "Hello World";
+
+    SPI2_GPIOInits();
+
+    SPI2_Inits();
+
+    SPI_SSIConfig(SPI2, ENABLE);
+
+    SPI_PeripheralControl(
+        SPI2,
+        ENABLE
+    );
+
+    SPI_SendData(
+        SPI2,
+        (uint8_t *)user_data,
+        strlen(user_data)
+    );
+
+    SPI_PeripheralControl(
+        SPI2,
+        DISABLE
+    );
+
+    while (1);
+}</code></pre>
+
+
+        <p>
+            At the software level I am passing a pointer to the
+            message along with its length. Inside the driver those
+            bytes are written to the SPI data register and the
+            peripheral handles shifting them onto MOSI.
+        </p>
+
+
+
+        <!-- =====================================================
+             ASCII / BYTES
+             ===================================================== -->
+
+        <h3>
+            "Hello World" Is Really Just Bytes
+        </h3>
+
+
+        <p>
+            The SPI peripheral has no concept of words or text.
+            "Hello World" is useful to me as a human but SPI only
+            sees the underlying binary values.
+        </p>
+
+
+<pre><code>H       0x48
+e       0x65
+l       0x6C
+l       0x6C
+o       0x6F
+space   0x20
+W       0x57
+o       0x6F
+r       0x72
+l       0x6C
+d       0x64</code></pre>
+
+
+        <p>
+            These are the values I expect the logic analyzer to
+            reconstruct from the electrical signal generated on MOSI.
+        </p>
+
+
+
+        <!-- =====================================================
+             COMPLETE TRACE
+             ===================================================== -->
+
+        <h3>
+            Capturing the Transmission
+        </h3>
+
+
+        <p>
+            After programming the STM32 I captured SCLK and MOSI
+            with the logic analyzer and configured the software to
+            decode the signals as SPI.
+        </p>
+
+
+        <figure class="post-hero-image">
+
+            <img
+                src="../assets/img/post2/trace.png"
+                alt="Logic analyzer SPI trace showing Hello World transmitted from an STM32F407"
+            >
+
+            <figcaption>
+                The complete SPI capture.
+            </figcaption>
+
+        </figure>
+
+
+        <p>
+            This is the point where the test becomes much more
+            meaningful than simply seeing the firmware execute.
+            The analyzer is observing the actual voltage transitions
+            produced by the microcontroller and reconstructing the
+            bytes from them.
+        </p>
+
+
+        <p>
+            The original message has now traveled through several
+            layers:
+        </p>
+
+
+        <div class="signal-flow">
+
+            <div>
+                <span>1</span>
+                Memory
+            </div>
+
+            <b>→</b>
+
+            <div>
+                <span>2</span>
+                My Driver
+            </div>
+
+            <b>→</b>
+
+            <div>
+                <span>3</span>
+                SPI2
+            </div>
+
+            <b>→</b>
+
+            <div>
+                <span>4</span>
+                MOSI
+            </div>
+
+            <b>→</b>
+
+            <div>
+                <span>5</span>
+                Decoder
+            </div>
+
+        </div>
+
+
+        <p>
+            Seeing "Hello World" reconstructed at the other end gives
+            me confidence that those layers are working together
+            correctly.
+        </p>
+
+
+
+        <!-- =====================================================
+             CLOCK EDGE
+             ===================================================== -->
+
+        <h3>
+            Looking at the Individual Clock Edges
+        </h3>
+
+
+        <p>
+            The decoded message verifies the complete transmission
+            but I also wanted to look at the raw waveform more
+            closely.
+        </p>
+
+
+        <figure class="post-hero-image">
+
+            <img
+                src="../assets/img/post2/fd.png"
+                alt="Zoomed SPI logic analyzer waveform showing the relationship between the clock edge and MOSI data"
+            >
+
+            <figcaption>
+                A closer look at the SPI waveform showing the clock
+                edge and the corresponding state of the MOSI signal.
+            </figcaption>
+
+        </figure>
+
+
+        <p>
+            This matters because SPI communication depends on the
+            relationship between the clock and the data signal.
+            Two configuration values, "CPOL and CPHA", define that
+            relationship.
+        </p>
+
+
+<pre><code>SPI2handle.SPIConfig.SPI_CPOL =
+    SPI_CPOL_LOW;
+
+SPI2handle.SPIConfig.SPI_CPHA =
+    SPI_CPHA_LOW;</code></pre>
+
+
+        <p>
+            CPOL controls the idle state of the clock. With CPOL low
+            SCLK rests at logic LOW when the bus is inactive.
+        </p>
+
+
+        <p>
+            CPHA determines which clock transition is used when
+            sampling data. With CPHA low data is sampled on the
+            first clock edge and changes on the following edge.
+            Because CPOL is also low in this configuration the first
+            edge is the rising edge and the following edge is the
+            falling edge.
+        </p>
+
+
+        <p>
+            Looking at the falling edge in the capture therefore
+            gives me a way to inspect the timing relationship between
+            SCLK and MOSI instead of relying entirely on the protocol
+            decoder.
+        </p>
+
+
+        <div class="technical-note">
+
+            <strong>
+                SPI Mode Used in This Test
+            </strong>
+
+            <p>
+                CPOL = 0 → Clock idles LOW<br>
+                CPHA = 0 → Sample on the first edge<br>
+                First edge → Rising<br>
+                Following edge → Falling
+            </p>
+
+        </div>
+
+
+
+        <!-- =====================================================
+             WHY LOGIC ANALYZER
+             ===================================================== -->
+
+        <h3>
+            Why Use a Logic Analyzer?
+        </h3>
+
+
+        <p>
+            One of the biggest differences I have found between
+            ordinary software development and embedded development
+            is that correct looking source code does not necessarily
+            mean correct hardware behavior.
+        </p>
+
+
+        <p>
+            I could make a mistake selecting an alternate function,
+            configuring the SPI clock, setting CPOL or CPHA or
+            manipulating a peripheral register and still have code
+            that compiles without an error.
+        </p>
+
+
+        <p>
+            The logic analyzer gives me an independent way to verify
+            what the microcontroller is actually doing.
+        </p>
+
+
+        <div class="signal-flow">
+
+            <div>
+                <span>1</span>
+                Configure
+            </div>
+
+            <b>→</b>
+
+            <div>
+                <span>2</span>
+                Transmit
+            </div>
+
+            <b>→</b>
+
+            <div>
+                <span>3</span>
+                Measure
+            </div>
+
+            <b>→</b>
+
+            <div>
+                <span>4</span>
+                Decode
+            </div>
+
+            <b>→</b>
+
+            <div>
+                <span>5</span>
+                Validate
+            </div>
+
+        </div>
+
+
+        <p>
+            In this case I can verify both the high level result
+            "Hello World" and the low level clock and data
+            relationship that produced it.
+        </p>
+
+
+
+        <!-- =====================================================
+             QUADCOPTER
+             ===================================================== -->
+
+        <h3>
+            Why This Matters for the Quadcopter
+        </h3>
+
+
+        <p>
+            The goal of this project is not to make an STM32 print
+            "Hello World." The goal is to build a flight controller
+            whose software I understand from the peripheral level
+            upward.
+        </p>
+
+
+        <p>
+            Eventually the STM32 will need to communicate reliably
+            with sensors and other hardware while simultaneously
+            processing measurements, estimating the orientation of
+            the aircraft, running control algorithms and generating
+            motor commands.
+        </p>
+
+
+        <p>
+            Debugging that complete system would be significantly
+            harder if I did not already trust the communication
+            drivers underneath it.
+        </p>
+
+
+        <p>
+            My approach is therefore to test each subsystem
+            independently. I write the driver, create a simple test,
+            measure the actual hardware behavior and verify that it
+            matches what I expected before moving on.
+        </p>
+
+
+        <p>
+            GPIO and interrupts were the first step. Successfully
+            transmitting and measuring SPI data gives the flight
+            controller another working piece of its low level
+            foundation.
+        </p>
+
+
+
+        <!-- =====================================================
+             SOURCE
+             ===================================================== -->
+
+        <div class="source-card">
+
+            <div>
+
+                <small>
+                    SOURCE CODE
+                </small>
+
+                <strong>
+                    006spi_tx_tesing.c
+                </strong>
+
+            </div>
+
+
+            <a
+                href="https://github.com/Robinhoets/stm32f407-quadcopter/blob/main/Src/006spi_tx_tesing.c"
+                target="_blank"
+                rel="noopener noreferrer"
+            >
+                View on GitHub
+                <span>→</span>
+            </a>
+
+        </div>
+
+
+
+        <!-- =====================================================
+             NEXT
+             ===================================================== -->
+
+        <div class="next-post">
+
+            <p>
+                NEXT DEVELOPMENT STEP
+            </p>
+
+            <h3>
+                Continuing Peripheral Communication
+            </h3>
+
+            <p>
+                With the SPI transmit path working and verified
+                electrically I can continue validating the
+                communication interfaces that will eventually connect
+                the STM32F407 to the sensors and other hardware needed
+                by the flight controller.
+            </p>
+
+        </div>
+
+
+    </div>
+
+</article>
 
 
 <!-- =========================================================
