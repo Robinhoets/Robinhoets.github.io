@@ -128,6 +128,643 @@
 
 </section>
 
+
+<!-- =========================================================
+     BLOG POST 003
+     DEBUGGING STM32 -> ARDUINO SPI
+     ========================================================= -->
+
+<article
+    class="blog-post"
+    id="stm32-arduino-spi-debugging"
+>
+
+    <header class="post-header">
+
+        <p class="post-number">
+            DEVELOPMENT LOG 003
+        </p>
+
+        <h2>
+            When SPI Disappears:
+            Debugging Communication Between an STM32 and Arduino
+        </h2>
+
+        <p class="post-date">
+            August 26, 2026
+        </p>
+
+    </header>
+
+
+    <!-- HERO IMAGE -->
+
+    <figure class="post-hero-image">
+
+        <img
+            src="../assets/img/post3/post3-i4.jpeg"
+            alt="STM32F407 and Arduino connected through a breadboard for SPI testing"
+        >
+
+        <figcaption>
+            The STM32F407 and Arduino test setup during SPI
+            communication debugging.
+        </figcaption>
+
+    </figure>
+
+
+    <div class="post-content">
+
+
+        <!-- =====================================================
+             INTRODUCTION
+             ===================================================== -->
+
+        <p class="post-lead">
+            After validating my STM32F407 SPI driver with a logic
+            analyzer, the next step was connecting the STM32 to
+            another device. I chose an Arduino as the SPI slave.
+            What looked like a straightforward integration quickly
+            became a hardware debugging exercise when signals that
+            were clearly leaving the STM32 were no longer reaching
+            the Arduino.
+        </p>
+
+        <p>
+            Eventually I want to add a camera to my quadcopter and 
+            I will likely need another microcontroller to process 
+            the video. So I need to figure out master and slave 
+            communication.
+        </p>
+
+        <p>
+            This ended up being one of the more useful tests in the
+            project so far. The problem was not simply solved by
+            changing code. I had to follow the signals physically
+            through the circuit and determine exactly where they
+            disappeared.
+        </p>
+
+
+        <!-- =====================================================
+             OBJECTIVE
+             ===================================================== -->
+
+        <h3>
+            The Goal
+        </h3>
+
+
+        <p>
+            My previous SPI test transmitted "Hello World" from
+            SPI2 on the STM32F407 and verified the output with a
+            logic analyzer.
+        </p>
+
+
+        <p>
+            That proved that the STM32 could generate the expected
+            SPI clock and data. Now I wanted to move from observing
+            the bus to communicating with an actual slave device.
+        </p>
+
+
+        <div class="signal-flow">
+
+            <div>
+                <span>1</span>
+                STM32F407
+            </div>
+
+            <b>→</b>
+
+            <div>
+                <span>2</span>
+                SPI
+            </div>
+
+            <b>→</b>
+
+            <div>
+                <span>3</span>
+                Arduino
+            </div>
+
+        </div>
+
+
+        <p>
+            The STM32 would operate as the SPI master and the
+            Arduino as the slave.
+        </p>
+
+
+        <!-- =====================================================
+             CONNECTIONS
+             ===================================================== -->
+
+        <h3>
+            Connecting the Two Boards
+        </h3>
+
+
+        <p>
+            SPI requires several signals to be shared between the
+            master and slave. For this test I needed the clock,
+            master output, slave output and slave select signals
+            along with a common ground reference.
+        </p>
+
+
+        <div class="technical-note">
+
+            <strong>
+                SPI Connections
+            </strong>
+
+            <p>
+                STM32 SCLK → Arduino SCK<br>
+                STM32 MOSI → Arduino MOSI<br>
+                STM32 MISO ← Arduino MISO<br>
+                STM32 NSS → Arduino SS<br>
+                STM32 GND ↔ Arduino GND
+            </p>
+
+        </div>
+
+
+        <p>
+            I initially routed the signals through the breadboard
+            and the interface hardware between the two boards.
+            With everything connected, I programmed both devices
+            and started checking the bus with the logic analyzer.
+        </p>
+
+
+        <!-- =====================================================
+             EXPECTED SIGNAL
+             ===================================================== -->
+
+        <h3>
+            First Question: Is the STM32 Actually Transmitting?
+        </h3>
+
+
+        <p>
+            When communication between two devices fails, there are
+            immediately several possible causes. The master may not
+            be transmitting. The slave may be configured incorrectly.
+            The SPI modes may not match. Slave select may not be
+            asserted correctly. There may also simply be a wiring
+            problem.
+        </p>
+
+
+        <p>
+            Instead of changing several things at once, I started
+            with the side of the system I had already tested:
+            the STM32.
+        </p>
+
+
+        <figure class="post-hero-image">
+
+            <img
+                src="../assets/img/post3/ack.png"
+                alt="Logic analyzer trace showing SPI signals and decoded data from the STM32F407"
+            >
+
+            <figcaption>
+                Probing the STM32 side showed the expected SPI
+                activity. The clock and transmitted data were
+                present and the analyzer could decode the traffic.
+            </figcaption>
+
+        </figure>
+
+
+        <p>
+            This was an important result because it reduced the
+            search space. I already knew from the previous
+            "Hello World" test that my SPI driver could generate
+            valid signals. Seeing those signals again told me that
+            the STM32 peripheral was still operating.
+        </p>
+
+
+        <div class="technical-note">
+
+            <strong>
+                Debugging Principle
+            </strong>
+
+            <p>
+                Verify what is known to work before changing it.
+                If the expected signal exists at the source, start
+                following that signal toward the destination.
+            </p>
+
+        </div>
+
+
+        <!-- =====================================================
+             MOVING THE PROBES
+             ===================================================== -->
+
+        <h3>
+            Following the Signal
+        </h3>
+
+
+        <p>
+            This is where the logic analyzer became particularly
+            useful.
+        </p>
+
+
+        <p>
+            Instead of only connecting the analyzer at one location,
+            I moved the probes along the physical signal path.
+            Close to the STM32, I could measure the expected SPI
+            activity. I then moved the probes to the other side of
+            the circuit closer to the wires leading to the Arduino.
+        </p>
+
+
+        <p>
+            The result changed.
+        </p>
+
+
+        <figure class="post-hero-image">
+
+            <img
+                src="../assets/img/post3/mosi.png"
+                alt="Logic analyzer capture showing one SPI signal while other expected signals are missing"
+            >
+
+            <figcaption>
+                After moving the analyzer probes to the Arduino side
+                of the signal path, only one of the expected signals
+                remained visible while the others disappeared.
+            </figcaption>
+
+        </figure>
+
+
+        <p>
+            This was the critical observation.
+        </p>
+
+
+        <p>
+            The firmware had not changed. The SPI configuration had
+            not changed. The STM32 was still generating the signals.
+            The only thing that changed was where I measured them.
+        </p>
+
+
+        <p>
+            That meant I was no longer primarily debugging the SPI
+            peripheral. I was debugging the physical path between
+            the two boards.
+        </p>
+
+
+        <!-- =====================================================
+             LOCALIZING FAILURE
+             ===================================================== -->
+
+        <h3>
+            The Signal Exists Here, But Not There
+        </h3>
+
+
+        <p>
+            At this point the circuit effectively gave me two
+            observations:
+        </p>
+
+
+        <div class="signal-flow">
+
+            <div>
+                <span>✓</span>
+                STM32 Side
+            </div>
+
+            <b>→</b>
+
+            <div>
+                <span>?</span>
+                Interface
+            </div>
+
+            <b>→</b>
+
+            <div>
+                <span>✕</span>
+                Arduino Side
+            </div>
+
+        </div>
+
+
+        <p>
+            The same signal that was measurable before passing
+            through the interface was missing afterward.
+        </p>
+
+        <p>
+            The breadboard connections, jumper wires and level
+            shifting interface therefore became much more
+            interesting than the SPI code.
+        </p>
+
+
+        <!-- =====================================================
+             LEVEL SHIFTER
+             ===================================================== -->
+
+        <h3>
+            Isolating the Interface
+        </h3>
+
+
+        <p>
+            The two boards operate with different logic voltage
+            conventions, so I had originally included level shifting
+            hardware between them. That also introduced another
+            component into every signal path.
+        </p>
+
+
+        <p>
+            At this point I needed to determine whether that
+            interface was actually helping the communication or
+            preventing it.
+        </p>
+
+
+        <p>
+            Since the analyzer showed valid signals before the
+            interface and missing signals after it, I tested the
+            connection without that part of the signal path.
+        </p>
+
+
+        <!-- =====================================================
+             FINAL CONNECTION
+             ===================================================== -->
+
+        <h3>
+            Simplifying the Circuit
+        </h3>
+
+
+        <figure class="post-hero-image">
+
+            <img
+                src="../assets/img/post3/post3-removed.jpeg"
+                alt="STM32F407 connected directly to an Arduino for SPI communication"
+            >
+
+            <figcaption>
+                The simplified final test setup with the STM32F407
+                and Arduino connected directly for SPI communication.
+            </figcaption>
+
+        </figure>
+
+
+        <p>
+            Bypassing the problematic portion of the interface
+            restored communication.
+        </p>
+
+
+        <p>
+            That result confirmed what the earlier measurements had
+            suggested: the SPI peripheral itself was not the source
+            of the failure. The problem was in the physical signal
+            path between the STM32 and Arduino.
+        </p>
+
+
+        <!-- =====================================================
+             DEBUGGING PROCESS
+             ===================================================== -->
+
+        <h3>
+            What Actually Solved the Problem
+        </h3>
+
+
+        <p>
+            The useful part of this test was not any single code
+            change. It was the process of progressively reducing the
+            number of possible causes.
+        </p>
+
+
+        <div class="signal-flow">
+
+            <div>
+                <span>1</span>
+                Observe Failure
+            </div>
+
+            <b>→</b>
+
+            <div>
+                <span>2</span>
+                Verify Source
+            </div>
+
+            <b>→</b>
+
+            <div>
+                <span>3</span>
+                Move Probe
+            </div>
+
+            <b>→</b>
+
+            <div>
+                <span>4</span>
+                Locate Failure
+            </div>
+
+            <b>→</b>
+
+            <div>
+                <span>5</span>
+                Isolate
+            </div>
+
+        </div>
+
+
+        <p>
+            First, I verified that the STM32 was still producing the
+            expected SPI signals. Then I measured the same signals
+            at another point in the circuit. When the behavior
+            changed depending on the measurement location I could
+            stop treating the firmware as the most likely problem.
+        </p>
+
+
+        <p>
+            From there, simplifying the physical connection allowed
+            me to isolate the component that was interfering with
+            the signal path.
+        </p>
+
+
+        <!-- =====================================================
+             LESSON
+             ===================================================== -->
+
+        <h3>
+            The Bigger Lesson
+        </h3>
+
+
+        <p>
+            Embedded debugging crosses the boundary between software
+            and hardware.
+        </p>
+
+
+        <p>
+            When the Arduino was not receiving the expected SPI
+            communication it would have been easy to keep changing
+            register settings or rewriting the transmit code. But
+            software changes would not fix a signal that was being
+            lost after it left the microcontroller.
+        </p>
+
+
+        <p>
+            Being able to probe the bus at multiple physical points
+            turned an ambiguous communication failure into a much
+            more specific question:
+        </p>
+
+
+        <div class="technical-note">
+
+            <strong>
+                Where does the signal stop looking correct?
+            </strong>
+
+            <p>
+                Once I could answer that question the problem became
+                considerably easier to isolate.
+            </p>
+
+        </div>
+
+
+        <p>
+            That is a debugging technique I expect to use repeatedly
+            as the quadcopter becomes more complex. Verify each layer
+            independently and follow failures across the boundary
+            between software and hardware rather than assuming which
+            side is responsible.
+        </p>
+
+
+        <!-- =====================================================
+             QUADCOPTER
+             ===================================================== -->
+
+        <h3>
+            Building Toward the Flight Controller
+        </h3>
+
+
+        <p>
+            The Arduino is serving as a useful development target
+            while I build and test the STM32 communication stack.
+            The larger objective is still the quadcopter flight
+            controller.
+        </p>
+
+        <p>
+            Developing a repeatable debugging process now is just as
+            important as developing the drivers themselves.
+        </p>
+
+
+        <p>
+            At this stage, another piece of the system has moved from
+            "the code should work" to something much more useful:
+            behavior I have actually observed and validated on the
+            hardware.
+        </p>
+
+
+        <!-- =====================================================
+             SOURCE
+             ===================================================== -->
+
+        <div class="source-card">
+
+            <div>
+
+                <small>
+                    PROJECT SOURCE
+                </small>
+
+                <strong>
+                    STM32F407 Quadcopter
+                </strong>
+
+            </div>
+
+
+            <a
+                href="https://github.com/Robinhoets/stm32f407-quadcopter"
+                target="_blank"
+                rel="noopener noreferrer"
+            >
+                View on GitHub
+                <span>→</span>
+            </a>
+
+        </div>
+
+
+        <!-- =====================================================
+             NEXT
+             ===================================================== -->
+
+        <div class="next-post">
+
+            <p>
+                NEXT DEVELOPMENT STEP
+            </p>
+
+            <h3>
+                Building on a Verified Communication Path
+            </h3>
+
+            <p>
+                With the physical SPI connection working between
+                devices, I can continue developing the communication
+                layer and move toward integrating the hardware that
+                will eventually become part of the flight controller.
+            </p>
+
+        </div>
+
+
+    </div>
+
+</article>
+
 <!-- =========================================================
      BLOG POST 002
      SPI TRANSMISSION + LOGIC ANALYZER
